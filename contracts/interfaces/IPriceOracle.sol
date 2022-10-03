@@ -6,8 +6,8 @@ pragma solidity 0.8.17;
 */
 
 interface IPriceOracle {
-  /***********
+    /***********
     @dev returns the asset price in ETH
      */
-  function getAssetPrice(address _asset) external view returns (uint256);
+    function getAssetPrice(address _asset) external view returns (uint256);
 }
