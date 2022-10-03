@@ -37,5 +37,9 @@ contract UnipswapV2Aggregator {
         maxPriceDeviation = _maxPriceDeviation;
         isPeggedToEth = _isPeggedToEth;
         decimals = _decimals;
+
+        // add tokens to array
+        tokens.push(_pair.token0());
+        tokens.push(_pair.token1());
     }
 }
