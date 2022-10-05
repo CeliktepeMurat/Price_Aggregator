@@ -18,7 +18,6 @@ contract UnipswapV2Aggregator {
     IUniswapV2Pair public immutable pair;
     IPriceOracle immutable priceOracle;
     address[] public tokens;
-    bool[] public isPeggedToEth;
     uint8[] public decimals;
 
     uint256 public immutable maxPriceDeviation;
@@ -27,10 +26,8 @@ contract UnipswapV2Aggregator {
         IUniswapV2Pair _pair,
         IPriceOracle _priceOracle,
         uint256 _maxPriceDeviation,
-        bool[] memory _isPeggedToEth,
         uint8[] memory _decimals
     ) {
-        require(_isPeggedToEth.length == 2, "ERR_INVALID_PEGGED_LENGTH");
         require(_decimals.length == 2, "ERR_INVALID_DECIMALS_LENGTH");
         require(
             address(_priceOracle) != address(0),
@@ -41,7 +38,6 @@ contract UnipswapV2Aggregator {
         pair = _pair;
         priceOracle = _priceOracle;
         maxPriceDeviation = _maxPriceDeviation;
-        isPeggedToEth = _isPeggedToEth;
         decimals = _decimals;
 
         // add tokens to array
@@ -54,14 +50,43 @@ contract UnipswapV2Aggregator {
         view
         returns (uint256)
     {
-        uint256 pi = isPeggedToEth[_index]
-            ? BONE
-            : uint256(priceOracle.getAssetPrice(tokens[_index]));
+        uint256 tokenPrice = uint256(priceOracle.getAssetPrice(tokens[_index]));
+        require(tokenPrice > 0, "ERR_NO_ORACLE_PRICE");
 
-        require(pi > 0, "ERR_NO_ORACLE_PRICE");
         uint256 missingDecimals = uint256(18).sub(decimals[_index]);
-        uint256 bi = uint256(_reserve).mul(10**(missingDecimals));
-        return Math.bmul(bi, pi);
+        uint256 tokenReserve = uint256(_reserve).mul(10**(missingDecimals));
+        return Math.bmul(tokenReserve, tokenPrice);
+    }
+
+    /**
+     * Returns true if there is a price deviation
+     * @param ethTotal_0 total eth balance of token0
+     * @param ethTotal_1 total eth balance of token1
+     */
+    function isThereDeviation(uint256 ethTotal_0, uint256 ethTotal_1)
+        internal
+        view
+        returns (bool)
+    {
+        uint256 price_deviation = Math.bdiv(ethTotal_0, ethTotal_1);
+
+        if (
+            price_deviation > BONE.add(maxPriceDeviation) ||
+            price_deviation < BONE.sub(maxPriceDeviation)
+        ) {
+            return true;
+        }
+
+        price_deviation = Math.bdiv(ethTotal_1, ethTotal_0);
+
+        if (
+            price_deviation > BONE.add(maxPriceDeviation) ||
+            price_deviation < BONE.sub(maxPriceDeviation)
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     function latestAnswer() external view returns (int256) {
