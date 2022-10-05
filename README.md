@@ -1,13 +1,6 @@
-# Sample Hardhat Project
+# AAVE <-> AMM Price providers
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This repository contains contracts that enable to read prices for the following AMM tokens:
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+- Balancer
+- Uniswap v2
