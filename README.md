@@ -1,4 +1,4 @@
-# AAVE <-> AMM Price providers
+# AMM Price Aggregators
 
 This repository contains contracts that enable to read prices for the following AMM tokens:
 
